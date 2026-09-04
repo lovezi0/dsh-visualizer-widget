@@ -1,0 +1,43 @@
+{
+  "name": "dsh-visualizer-widget",
+  "version": "0.1.0",
+  "description": "把会话内联可视化能力移植进 DeepSeek Harness：render_visual 把 SVG/HTML 源码渲染成会话流内联卡片，get_visualizer_spec 提供统一渲染规范。",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lovezi0/dsh-visualizer-widget.git"
+  },
+  "license": "MIT",
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web"
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "*",
+    "@deepseek-ai/dsh-tools": "^0.1.2-rc.1",
+    "@deepseek-ai/schemastery": "^3.18.2"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "prepublishOnly": "npm run build"
+  }
+}
