@@ -15,6 +15,10 @@ DeepSeek Harness 的会话流「内联可视化」插件：模型产出 SVG / HT
 
 卡片在 `tool.call.toolview` 槽位上按 `render_visual` 键接管该工具的调用行，源码经 iframe `srcdoc` 沙箱隔离渲染。
 
+## 效果预览
+
+![dsh-visualizer-widget 会话流内联可视化卡片效果](assets/image.png)
+
 ## 设计要点
 
 - **源码与模型上下文解耦**：`render_visual` 的 `output.render` 只回一行摘要（格式 / 字符数 / 高度），完整源码只留在工具结果与卡片里，不进入模型上下文。
@@ -32,7 +36,7 @@ dsh plugin --profile web add github:lovezi0/dsh-visualizer-widget
 ```
 ```bash
 # 卸载
-dsh plugin --profile web remove dsh-visualizer-widget`。
+dsh plugin --profile web remove dsh-visualizer-widget
 ```
 
 ## 构建
