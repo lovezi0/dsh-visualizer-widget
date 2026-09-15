@@ -1,6 +1,7 @@
 name: sync-to-cnb
 on:
   push:
+    branches: ["*"]
     tags: ["*"]
   workflow_dispatch:
 jobs:
