@@ -14,7 +14,7 @@ jobs:
       - run: |
           git config --global user.email "bot@cnb.local"
           git config --global user.name "cnb-sync"
-          REMOTE="https://cnb:${{ secrets.CNB_TOKEN }}@cnb.cool/txpoi/lovezi0/dsh-memory-palace.git"
+          REMOTE="https://cnb:${{ secrets.CNB_TOKEN }}@cnb.cool/txpoi/lovezi0/dsh-visualizer-widget.git"
           git remote add cnb "$REMOTE" || git remote set-url cnb "$REMOTE"
           git push cnb --all
           git push cnb --tags
