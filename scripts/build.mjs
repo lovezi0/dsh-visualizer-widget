@@ -27,6 +27,7 @@ const CLIENT_PARTS = [
   "00-head.js",
   "10-card.js",
   "20-settings-card.js",
+  "30-chat-node.js",
   "90-tail.js",
 ];
 const clientDir = join(src, "client");

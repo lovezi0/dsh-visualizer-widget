@@ -2,7 +2,7 @@
 
 DeepSeek Harness 的会话流「内联可视化」插件：模型产出 SVG / HTML 源码后，交给浏览器渲染成一张可交互的内联卡片，源码只进卡片、不回灌模型上下文。
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE) [![npm](https://img.shields.io/npm/v/dsh-visualizer-widget.svg?label=npm&labelColor=000000&color=ff4b01)](https://www.npmjs.com/package/dsh-visualizer-widget) [![DeepSeek Harness:0.1.5-rc.1](https://img.shields.io/badge/DeepSeek%20Harness-0.1.5--rc.1-success.svg?labelColor=4D6BFE)](https://github.com/deepseek-ai/deepseek-harness)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE) [![npm](https://img.shields.io/npm/v/dsh-visualizer-widget.svg?label=npm&labelColor=000000&color=ff4b01)](https://www.npmjs.com/package/dsh-visualizer-widget) [![DeepSeek Harness:0.1.7-alpha.1](https://img.shields.io/badge/DeepSeek%20Harness-0.1.7--alpha.1-success.svg?labelColor=4D6BFE)](https://github.com/deepseek-ai/deepseek-harness)
 
 ## 能做什么
 
@@ -10,10 +10,14 @@ DeepSeek Harness 的会话流「内联可视化」插件：模型产出 SVG / HT
 
 | 工具 | 作用 |
 | --- | --- |
-| `render_visual` | 把 SVG / HTML 源码渲染成会话流内联卡片（预览/源码切换、高度档位、浅色/深色底、重跑、复制） |
+| `render_visual` | 把 SVG / HTML 源码渲染成会话流内联卡片（预览/源码切换、高度档位、浅色/深色底、弹出全屏查看、重跑、下载、保存为图片、复制） |
+
+> 下载与导出走「自包含」改造：SVG 会补齐命名空间、内联规范色板样式、并把 `width="100%"` 落成 viewBox 像素尺寸，因此导出的文件脱离本工具也能正常显示；保存为图片为 2 倍分辨率 PNG。
+>
+> 弹出查看：打开时自动「适应窗口」显示整幅（上限 250%）；滚轮以光标为锚点缩放（25%~600%），拖拽平移，也可用标题栏的 `−` / 倍率 / `+` 控件。缩放以内容固有尺寸（SVG 的 viewBox）为 100% 基准，缩小时能看到更多内容。
 | `get_visualizer_spec` | 按需返回统一渲染规范全文（viewBox 基准 680、字号/字重约束、9×7 色板、明暗配色、图类型路由、导出陷阱等） |
 
-卡片在 `tool.call.toolview` 槽位上按 `render_visual` 键接管该工具的调用行，源码经 iframe `srcdoc` 沙箱隔离渲染。
+完整卡片作为消息流一等行渲染（自定义 Chat Node，锚定在工具调用行之后），源码经 iframe `srcdoc` 沙箱隔离渲染；工具调用块本身只留一行紧凑状态提示，规避宿主对工具块的高度限制。
 
 ## 效果预览
 
@@ -53,5 +57,11 @@ npm run build
 
 ## 版本历史
 
-**0.1.0**
+- **0.2.0**
+    - **0.2.0-alpha.1**
+        - 💪适配deepseek harness 0.1.7-alpha.1
+        - 🐛修复某些情况下浅色的色块渲染成纯黑
+        - 💪visual card 现在将在回复块中显示
+        - 💪visual card 现在支持弹出预览
+- **0.1.0**
     - 🔥会话流「内联可视化」插件

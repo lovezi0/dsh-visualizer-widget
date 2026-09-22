@@ -1,5 +1,10 @@
-    // ---- 设置卡片：settings.plugin.item（key = 命名空间），对齐官方 PluginCard 样式 ----
+    // ---- 设置卡片：plugins.bundle.config（key = bundle 包名），对齐官方配置卡片样式 ----
+    // 0.1.7 起设置 API 为 configForms：命名空间 NS 由 host 半 Config 的 volatile 字段自动 expose。
+    // 注意：plugins.bundle.config 页面渲染时 owner 只传 { view }，不注入 form，
+    // 所以 form 由本卡注册描述符的 inject 自带（官方 voice-input/web-search 同款写法）。
     const NS = "visualizer-widget";
+    // plugins.bundle.config 的 key 是 bundle 的 npm 包名（宿主按 pkg.name 分发）。
+    const BUNDLE_KEY = "dsh-visualizer-widget";
 
     const SETTINGS_CSS = [
       // 卡片外壳（官方 .card）
@@ -40,12 +45,14 @@
     ].join("\n");
 
     function SettingsCard(props) {
-      const scope = props.scope;
-      const snapState = React.useState(scope.getSnapshot());
+      // plugins.bundle.config 的 owner 只传 {view:'page'}，不注入 form——
+      // 与官方 voice-input / web-search 同构，form 由注册 descriptor 的 inject 提供。
+      const form = props.form;
+      const snapState = React.useState(form.getSnapshot());
       const snap = snapState[0];
       const setSnap = snapState[1];
 
-      React.useEffect(() => scope.subscribe(() => setSnap(scope.getSnapshot())), []);
+      React.useEffect(() => form.subscribe(() => setSnap(form.getSnapshot())), []);
 
       const value = snap.value || {};
       const currentEnabled = value.enabled !== false;
@@ -141,11 +148,15 @@
     }
 
     function applySettingsCard(ctx) {
-      const scope = ctx.settingsScope.bind({ namespace: NS });
+      // form 由 ConfigForms 服务持有并按 ns 缓存（provider-owned，服务卸载时统一 dispose）；
+      // 本侧只 get、不 dispose——dispose 后 get 会拿到已死的缓存对象。
+      const form = ctx.configForms.get(NS);
       ctx.effect(() => injectStyles(SETTINGS_CSS));
-      ctx.slots.inject("settings.plugin.item", () => ctx.slots.register({
-        name: "settings.plugin.item",
-        key: NS,
-        inject: () => ({ scope })
-      }, SettingsCard));
+      // 宿主 serve 该命名空间期间才挂载卡片；未组合 host 半时不留痕迹。
+      // whileServed 返回 disposer，由调用方包进 ctx.effect。
+      return ctx.configForms.whileServed([NS], () => ctx.slots.inject("plugins.bundle.config", () => ctx.slots.register({
+        name: "plugins.bundle.config",
+        key: BUNDLE_KEY,
+        inject: () => ({ form }),
+      }, SettingsCard)));
     }
