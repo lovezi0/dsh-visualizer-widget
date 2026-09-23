@@ -2,7 +2,7 @@
 
 DeepSeek Harness 的会话流「内联可视化」插件：模型产出 SVG / HTML 源码后，交给浏览器渲染成一张可交互的内联卡片，源码只进卡片、不回灌模型上下文。
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE) [![npm](https://img.shields.io/npm/v/dsh-visualizer-widget.svg?label=npm&labelColor=000000&color=ff4b01)](https://www.npmjs.com/package/dsh-visualizer-widget) [![DeepSeek Harness:0.1.7-alpha.1](https://img.shields.io/badge/DeepSeek%20Harness-0.1.7--alpha.1-success.svg?labelColor=4D6BFE)](https://github.com/deepseek-ai/deepseek-harness)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE) [![npm](https://img.shields.io/npm/v/dsh-visualizer-widget.svg?label=npm&labelColor=000000&color=ff4b01)](https://www.npmjs.com/package/dsh-visualizer-widget) [![DeepSeek Harness:0.1.7-rc.1](https://img.shields.io/badge/DeepSeek%20Harness-0.1.7--rc.1-success.svg?labelColor=4D6BFE)](https://github.com/deepseek-ai/deepseek-harness)
 
 ## 能做什么
 
@@ -58,6 +58,8 @@ npm run build
 ## 版本历史
 
 - **0.2.0**
+    - 徽标核验线更新至 0.1.7-rc.1
+    - npm publish
     - **0.2.0-alpha.1**
         - 💪适配deepseek harness 0.1.7-alpha.1
         - 🐛修复某些情况下浅色的色块渲染成纯黑
