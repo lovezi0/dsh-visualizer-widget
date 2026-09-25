@@ -2,7 +2,7 @@
 
 DeepSeek Harness 的会话流「内联可视化」插件：模型产出 SVG / HTML 源码后，交给浏览器渲染成一张可交互的内联卡片，源码只进卡片、不回灌模型上下文。
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE) [![npm](https://img.shields.io/npm/v/dsh-visualizer-widget.svg?label=npm&labelColor=000000&color=ff4b01)](https://www.npmjs.com/package/dsh-visualizer-widget) [![DeepSeek Harness:0.1.7-rc.1](https://img.shields.io/badge/DeepSeek%20Harness-0.1.7--rc.1-success.svg?labelColor=4D6BFE)](https://github.com/deepseek-ai/deepseek-harness)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE) [![npm](https://img.shields.io/npm/v/dsh-visualizer-widget.svg?label=npm&labelColor=000000&color=ff4b01)](https://www.npmjs.com/package/dsh-visualizer-widget) [![DeepSeek Harness:0.1.7-rc.2](https://img.shields.io/badge/DeepSeek%20Harness-0.1.7--rc.2-success.svg?labelColor=4D6BFE)](https://github.com/deepseek-ai/deepseek-harness) [![Desktop: supported](https://img.shields.io/badge/Desktop-supported-success.svg?labelColor=4D6BFE)](#安装)
 
 ## 能做什么
 
@@ -31,18 +31,24 @@ DeepSeek Harness 的会话流「内联可视化」插件：模型产出 SVG / HT
 
 ## 安装
 
-```bash
-# 本地目录
-dsh plugin --profile web add .
+### Web / CLI
 
-# 或从 GitHub
+```bash
+# GitHub
 dsh plugin --profile web add github:lovezi0/dsh-visualizer-widget
+
+# npm
+dsh plugin --profile web add dsh-visualizer-widget
 ```
 ```bash
 # 卸载
 dsh plugin --profile web remove dsh-visualizer-widget
 ```
 
+### 桌面版（DSH Desktop）
+
+- 推荐直接填包名 `dsh-visualizer-widget`（走 npm registry，装完重启应用即可）。
+- 也可填 `github:lovezi0/dsh-visualizer-widget`。
 ## 构建
 
 ```bash
