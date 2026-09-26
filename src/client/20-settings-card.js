@@ -88,10 +88,15 @@
         if (!writable || !dirty || saving) return;
         setSaving(true);
         setFlag("");
-        void Promise.all([
-          scope.set("enabled", enabled),
-          scope.set("prompt", prompt),
-        ]).then(() => setFlag("已保存")).catch(() => setFlag("保存失败")).finally(() => setSaving(false));
+        // 一次原子提交两个字段：宿主按 revision 校验，避免两次 set 造成的半保存态。
+        // （0.2.0 此处误用迁移前的 scope.set——未定义标识符，保存必然失败。）
+        form.mutate([
+          { op: "set", path: ["enabled"], value: enabled },
+          { op: "set", path: ["prompt"], value: prompt },
+        ], snap.revision)
+          .then((ok) => setFlag(ok ? "已保存" : "保存被拒绝（值未通过校验）"))
+          .catch((err) => setFlag("保存失败：" + (err && err.message ? err.message : String(err))))
+          .finally(() => setSaving(false));
       };
 
       const header = React.createElement("button", {

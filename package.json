@@ -1,6 +1,6 @@
 {
   "name": "dsh-visualizer-widget",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "把会话内联可视化能力移植进 DeepSeek Harness：render_visual 把 SVG/HTML 源码渲染成会话流内联卡片，get_visualizer_spec 提供统一渲染规范。",
   "type": "module",
   "main": "lib/index.js",
@@ -41,6 +41,7 @@
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "*",
+    "@deepseek-ai/dsh-llm": ">=0.1.7-alpha.1 <0.1.8-0",
     "@deepseek-ai/dsh-tools": ">=0.1.7-alpha.1 <0.1.8-0",
     "@deepseek-ai/schemastery": ">=3.18.3 <4.0.0"
   },

@@ -148,12 +148,13 @@
     // sendPrompt 桩：规范里的交互钩子在沙箱 iframe 内无宿主实现，给 no-op 防 ReferenceError。
     const STUB_SCRIPT = "<script>window.sendPrompt=window.sendPrompt||function(){};<\/script>";
 
-    // 滚轮/拖拽桥：sandbox iframe 内的事件不冒泡到父文档，父页面也无权在 iframe 文档里挂监听
-    // （未开 allow-same-origin），故由 iframe 内部脚本把滚轮/拖拽转成 postMessage 上报。
+    // 滚轮桥：sandbox iframe 内的事件不冒泡到父文档，父页面也无权在 iframe 文档里挂监听
+    // （未开 allow-same-origin），故由 iframe 内部脚本把滚轮转成 postMessage 上报。
     // 默认**关闭**：先发 hello 征询，父页面（仅弹出态）回 enable 才接管，避免预览态把聊天页滚动吞掉。
     // 未放大且 iframe 内部还能滚时放行原生滚动，保证长内容照常可读。
+    // 平移已移除：弹出态只支持滚轮缩放，放大后拖容器滚动条浏览。
     const BRIDGE_SCRIPT = "<script>(function(){"
-      + "var on=false,k=1,drag=false,sx=0,sy=0;"
+      + "var on=false,k=1;"
       + "function root(){return document.scrollingElement||document.documentElement;}"
       + "function send(m){try{parent.postMessage(m,'*');}catch(e){}}"
       + "addEventListener('message',function(e){var d=e.data||{};"
@@ -167,13 +168,6 @@
       + "e.preventDefault();"
       + "send({type:'dsh-viz-wheel',dy:e.deltaY,x:e.clientX,y:e.clientY});"
       + "},{passive:false});"
-      + "addEventListener('mousedown',function(e){if(!on)return;drag=true;sx=e.clientX;sy=e.clientY;});"
-      + "addEventListener('mousemove',function(e){if(!on||!drag)return;"
-      + "var dx=e.clientX-sx,dy=e.clientY-sy;"
-      + "if(Math.abs(dx)+Math.abs(dy)<3)return;"
-      + "e.preventDefault();sx=e.clientX;sy=e.clientY;"
-      + "send({type:'dsh-viz-pan',dx:dx,dy:dy});});"
-      + "addEventListener('mouseup',function(){drag=false;});"
       + "function report(){send({type:'dsh-viz-size',w:document.documentElement.scrollWidth||0,h:document.documentElement.scrollHeight||0});}"
       + "send({type:'dsh-viz-bridge-hello'});"
       + "if(document.readyState==='complete'){setTimeout(report,0);}else{addEventListener('load',function(){setTimeout(report,0);});}"
@@ -375,7 +369,7 @@
         fitTo(b);
       }, [popup]);
 
-      // 弹出态：接 iframe 上报的滚轮/拖拽（见 BRIDGE_SCRIPT 注释），并把当前倍率同步回 iframe。
+      // 弹出态：接 iframe 上报的滚轮（见 BRIDGE_SCRIPT 注释），并把当前倍率同步回 iframe。
       React.useEffect(() => {
         if (!popup) return;
         const frame = frameRef.current;
@@ -407,10 +401,6 @@
             const my = r.top + (Number(d.y) || 0) * k - br.top;
             zoomTo(k * Math.exp(-(Number(d.dy) || 0) * 0.0016), mx, my);
             return;
-          }
-          if (d.type === "dsh-viz-pan" && box) {
-            box.scrollLeft -= (Number(d.dx) || 0) * k;
-            box.scrollTop -= (Number(d.dy) || 0) * k;
           }
         };
 
@@ -682,7 +672,7 @@
               })
             ) : null
           ),
-          React.createElement("span", { className: "dsh-viz-dlg-hint" }, "滚轮缩放 · 拖拽平移")
+          React.createElement("span", { className: "dsh-viz-dlg-hint" }, "滚轮缩放")
         )
       );
 
