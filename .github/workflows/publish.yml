@@ -1,0 +1,62 @@
+name: publish
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      # 本包构建只依赖 Node 内置模块（scripts/build.mjs），无需安装依赖。
+      # 使用 npm trusted publishing（OIDC）：不需要 NPM_TOKEN，但需在 npm 包设置里
+      # 绑定本仓库的 GitHub Actions 作为 trusted publisher。
+      - name: Verify tag matches package version
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME#v}"
+          pkg="$(node -p 'require("./package.json").version')"
+          if [ "$tag" != "$pkg" ]; then
+            echo "::error::tag ${GITHUB_REF_NAME} does not match package.json version ${pkg}"
+            exit 1
+          fi
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify committed lib is current and valid
+        run: |
+          set -euo pipefail
+          if [ -n "$(git status --porcelain --untracked-files=all -- lib)" ]; then
+            echo "::error::lib/ is out of date or has untracked files; run npm run build and commit lib/"
+            git status --short -- lib
+            exit 1
+          fi
+          for file in lib/*.js lib/*.mjs; do
+            node --check "$file"
+          done
+
+      - name: Resolve dist-tag
+        run: |
+          set -euo pipefail
+          pkg="$(node -p 'require("./package.json").version')"
+          case "$pkg" in
+            *-*) dist_tag="$(node -p "require('./package.json').version.split('-')[1].split('.')[0]")" ;;
+            *)   dist_tag="latest" ;;
+          esac
+          echo "dist_tag=$dist_tag" >> "$GITHUB_ENV"
+
+      - name: Publish
+        run: npm publish --tag "$dist_tag"

@@ -80,7 +80,7 @@
     }
 
     // ---- iframe 兼容层：规范 CSS 变量 + 预置 class + sendPrompt 桩 ----
-    // 模型按规范（WorkBuddy visualizer 快照）生成源码，会引用 --color-* 变量与
+    // 模型按规范生成源码，会引用 --color-* 变量与
     // t/box/c-* 等预置 class；但 iframe srcdoc 是独立文档，宿主变量不透传，
     // var() 解析失败时 fill 回落黑色（症状：色块全黑）。此处按规范 1.6/1.7/1.9
     // 在文档内重建这套令牌，深浅底随卡片「浅底/深底」切换。

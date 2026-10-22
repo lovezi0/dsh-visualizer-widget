@@ -24,7 +24,7 @@ DeepSeek Harness 的会话流「内联可视化」插件：模型产出 SVG / HT
 - **源码与模型上下文解耦**：`render_visual` 的 `output.render` 只回一行摘要（格式 / 字符数 / 高度），完整源码只留在工具结果与卡片里，不进入模型上下文。
 - **渲染规范随包分发**：`get_visualizer_spec` 返回的规范固化的内联可视化设计规范，生成源码时据此保持统一视觉。
 - **安全隔离**：iframe 沙箱只给 `allow-scripts allow-popups allow-forms`，不带 `allow-same-origin`，卡片内脚本拿不到主页面 DOM / storage。
-- **提示词注入默认关闭**：把「优先用 render_visual 内联渲染」写进系统提示词是可选增强，默认不开启；需要时在插件设置里打开（此后每轮都引导模型），或用 `/visual` 命令按次触发。
+- **提示词注入默认关闭**：把「何时该画 + 怎么画」写进系统提示词是可选增强，默认不开启；提示词正文保存在 profile 目录的 `.visualizer-widget/prompt.md`（可在设置页编辑，或直接改文件，下一轮生效），不再把大段文本写进 `cordis.patch.yml`。
 
 ## 安装
 
@@ -66,8 +66,16 @@ npm run build
 
 想让模型每一轮都优先使用内联卡片（而不是输出 SVG/HTML 代码或写文件），到插件设置页（设置 → 插件 → dsh-visualizer-widget）打开「启用提示词注入」；关掉即回到默认。
 
+提示词正文在 `$DSH_HOME/profiles/<profile>/.visualizer-widget/prompt.md`，首次启动自动生成；可在设置页直接编辑并保存，或直接修改该文件，下一轮生效。**0.4.0 起不再读取旧配置里的 `prompt` 字段（破坏性变更）**，该键可从 `cordis.patch.yml` 删除。
+
 ## 版本历史
 
+- **0.4.0**
+    - **0.4.0-alpha.1**
+        - 💥提示词落盘位置迁移
+        - 💪优化内置提示词
+        - 💪优化 `/visual` 命令前缀
+        - 通过github workflow 发布npm包
 - **0.3.1**
     - dsh peer [0.1.7 ... 0.2.0]
 - **0.3.0**

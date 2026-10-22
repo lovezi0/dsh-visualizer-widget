@@ -1,25 +1,25 @@
 # Visualizer 设计规范
 
-**本文件是 harness 规范唯一来源。** 在具备 `read_me` 的宿主上，请直接用 `read_me` 拉实时版本，不要读这份快照。
+**本文件是 harness 规范唯一来源。** 由 `get_visualizer_spec` 一次返回全文（公共底座 + 全部模块），照此施工即可；不需要、也不支持按模块请求。
 
 ---
 
-## 0. 模块加载机制（重要）
+## 0. 规范结构与绘法路由（重要）
 
-`read_me` 的返回 = **公共底座（恒定）+ 模块增量（叠加）**。
+本快照 = **公共底座 + 五个模块**，一次性给全，无需再挑模块。
 
-- 公共底座：无论传什么模块，都会返回（设计哲学 / 通用规则 / CSS 变量 / 色板 / SVG 通用规则 / 预置 class / 字号校准）
-- 模块增量：按 `modules` 数组里的值追加，可一次传多个，去重后拼接
+- 公共底座：设计哲学 / 通用规则 / CSS 变量 / 色板 / SVG 通用规则 / 预置 class / 字号校准
+- 模块：按下表选图形语言，细则都在后文
 
-| modules 值 | 实际追加的段落 | 解决什么问题 |
+| 模块 | 内容 | 解决什么问题 |
 |---|---|---|
 | `diagram` | Diagram Guidance（流程图 / 结构图 / 示意画 / 类型路由表） | 概念、层级、流程、系统结构 |
 | `mockup` | UI Components（设计令牌、卡片、布局、3 种 Pattern） | UI 界面原型、数据记录卡、对比卡片 |
-| `interactive` | Interactive Guidance | 滑块/按钮/stepper/动态计算 |
+| `interactive` | Interactive Guidance | 滑块/按钮/stepper/动态计算（仅纯前端，不依赖宿主回传） |
 | `chart` | Charts (Chart.js) + Geographic maps (D3 choropleth) | 数据图表、地理可视化 |
 | `art` | Art and illustration | 装饰性插画（**规则豁免区**） |
 
-已知瑕疵：`interactive` 模块的段落会被**重复返回两次**（服务端拼接未去重），不影响使用。
+**交互回传限制**：`sendPrompt()` 在本宿主卡片沙箱里是 no-op。交互只做纯前端（控件状态、筛选、排序、实时计算）；需要模型在后续轮次响应时，请在卡片外的正文里说明，不要依赖回传。
 
 ---
 
@@ -32,13 +32,13 @@
 - **Compact**：核心内容内联展示，其余用文字说明
 - **文字归响应，视觉归工具**：所有解释性文字写在工具调用**之外**的正常回复中，工具输出只含视觉元素
 
-### 1.2 流式输出约束
+### 1.2 输出结构约束
 
-- 逐 token 流式渲染，因此结构要让有效内容**尽早出现**
+- 卡片在工具结果返回后一次性渲染整份源码；结构仍要让有效内容**尽早出现**（先内容、后脚本）
 - HTML 顺序：`<style>`（短）→ 内容 HTML → `<script>` 放最后
 - SVG 顺序：`<defs>`（marker）→ 立刻画视觉元素
 - 优先内联 `style="..."`，少用 `<style>` 块；`<style>` 控制在 15 行内
-- 渐变/阴影/模糊在流式 DOM diff 时会闪烁 → 用纯色填充
+- 渐变/阴影/模糊在缩放与重绘时会闪烁，且违反扁平规范 → 用纯色填充
 
 ### 1.3 硬性规则
 
@@ -52,7 +52,7 @@
 - 一律 sentence case，不用 Title Case，不用全大写
 - 禁止 `position: fixed`
 - 不写 DOCTYPE、`<html>`、`<head>`、`<body>`，只输出内容片段
-- **本地图片**：用绝对路径引用（`<img src="/abs/path.png">`，SVG 用 `<image href="/abs/path.png">`），宿主自动重写为可加载形式；不要手写 `data:` base64 或自定义协议
+- **图片**：本宿主不重写卡片里的本地路径（`/abs/path.png` 会 404）。优先用 SVG 图形自绘；确需位图时用公网 URL，并接受它可能被 CSP 拦截；不要手写 `data:` base64（会挤爆上下文）
 - **CDN 白名单（CSP 强制）**：`cdnjs.cloudflare.com`、`esm.sh`、`cdn.jsdelivr.net`、`unpkg.com`
 
 ### 1.4 复杂度预算（硬限制）
@@ -115,7 +115,7 @@
 | `class="ts"` | sans 12px 次要色 |
 | `class="th"` | sans 14px medium（500） |
 | `class="box"` | 中性矩形（bg-secondary 填充 + 边框） |
-| `class="node"` | 可点击组，带 hover 效果 |
+| `class="node"` | 节点分组容器，带 hover 效果（点击不回传宿主） |
 | `class="arr"` | 箭头线（1.5px，开口 V 形箭头） |
 | `class="leader"` | 虚线引出线（tertiary 描边，0.5px） |
 | `class="c-{ramp}"` | 彩色节点，用于 `<g>` 或 rect/circle/ellipse（**不用于 path**） |
@@ -160,7 +160,7 @@
 单行节点（44px）：
 
 ```svg
-<g class="node c-blue" onclick="sendPrompt('...')">
+<g class="node c-blue">
   <rect x="100" y="20" width="180" height="44" rx="8" stroke-width="0.5"/>
   <text class="th" x="190" y="42" text-anchor="middle" dominant-baseline="central">T-cells</text>
 </g>
@@ -169,7 +169,7 @@
 两行节点（56px）：
 
 ```svg
-<g class="node c-blue" onclick="sendPrompt('...')">
+<g class="node c-blue">
   <rect x="100" y="20" width="200" height="56" rx="8" stroke-width="0.5"/>
   <text class="th" x="200" y="38" text-anchor="middle" dominant-baseline="central">Dendritic cells</text>
   <text class="ts" x="200" y="56" text-anchor="middle" dominant-baseline="central">Detect foreign antigens</text>
@@ -222,8 +222,8 @@
 - 边框：一律 `0.5px solid var(--color-border-tertiary)`（需要强调时用 `-secondary`）
 - 圆角：`--border-radius-md` 用于多数元素，`-lg` 用于卡片
 - 卡片：白底（`--color-background-primary`），0.5px 边框，radius-lg，padding `1rem 1.25rem`
-- 表单元素（input、select、textarea、button、range slider）已预置样式，写裸标签即可
-- 按钮：预置样式，透明底 + 0.5px border-secondary。若触发 `sendPrompt`，末尾加 ↗ 箭头
+- 表单元素（input、select、textarea、button、range slider）**未预置样式**：写内联样式（透明底、0.5px border-secondary、radius-md、13px 字号），否则是浏览器默认外观
+- 按钮：预置样式，透明底 + 0.5px border-secondary。按钮不做宿主回传（`sendPrompt` 为 no-op）；若希望用户继续追问，在卡片外正文引导，可保留 ↗ 作视觉提示
 - **所有展示的数字都要取整**：用 `Math.round()`、`.toFixed(n)` 或 `Intl.NumberFormat`
 - 间距：垂直节奏用 rem（1rem / 1.5rem / 2rem），组件内部间隙用 px（8 / 12 / 16）
 
@@ -235,7 +235,7 @@
 
 - **编辑式**（说明性内容）：不加卡片外壳，文字自然流动
 - **卡片式**（有边界的对象，如联系人记录、小票）：整块包在一张抬升卡片里
-- **不要在这里放表格** —— 表格用 markdown 输出在回复正文里
+- **说明性表格不要塞进原型**；但用户在需求里点名「对比表 / 时间线」这类成品时，用卡片渲染它，不要用 markdown 表格敷衍
 - 网格：用 `minmax(0, 1fr)` 防止溢出
 - 受限布局（≤700px）里的表格：用 `table-layout: fixed`
 
@@ -245,7 +245,7 @@
 
 ### 3.6 Pattern 1：交互式讲解器
 
-用 HTML 承载交互控件——滑块、按钮、实时状态、图表。不加卡片外壳，留白即容器。用 `sendPrompt()` 让用户追问。
+用 HTML 承载交互控件——滑块、按钮、实时状态、图表。不加卡片外壳，留白即容器。交互只做纯前端状态；`sendPrompt()` 在本宿主为 no-op，需要追问时在卡片外正文说明。
 
 ### 3.7 Pattern 2：选项对比
 
@@ -273,8 +273,8 @@
 
 - 用 HTML 承载交互控件——滑块、按钮、实时状态显示、图表
 - 解释性文字留在正常回复里，**不要嵌进 HTML**
-- 筛选、排序、开关、计算都在 JS 里做。只在"下一步确实需要模型思考"时才调 `sendPrompt()`
-- **Stepper**：流式输出期间所有内容纵向堆叠展示；流式结束后再交给 JS 驱动分步
+- 筛选、排序、开关、计算都在 JS 里做。需要模型在后续轮次接着做时，由卡片外正文引导；`sendPrompt()` 在本宿主为 no-op。
+- **Stepper**：源码一次性渲染，JS 直接初始化第一步即可，无需等待「流式结束」
 - **循环**：用 HTML stepper 配 `● ○ ○` 位置指示器，最后一步的"下一步"回到第一步
 
 ---
@@ -301,7 +301,7 @@
 
 - 每个 `<canvas>` **必须**有 `role="img"`、描述性 `aria-label`，以及标签之间的 fallback 文本
 - 不能只靠颜色区分数据系列 —— 每种颜色要配一个次要视觉线索
-- Canvas 无法解析 CSS 变量 → 用硬编码 hex
+- Canvas 无法解析 CSS 变量 → 用硬编码 hex（按卡片默认浅底取色；深底是用户手动切换，不必为此翻转配色）
 - 高度**只**设在外层 div 上，绝不在 canvas 元素上设
 - 水平条形图：外层 div 高度至少 `(条形数 × 40) + 80` px
 - 通过 `cdnjs.cloudflare.com` 加载 UMD 构建，后面跟普通 `<script>`（**不要** `type="module"`）
@@ -344,14 +344,14 @@ plugins: { legend: { display: false } }
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
 <script>
 const values = { 'California': 39, 'Texas': 30, 'New York': 19 };
-const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
-const color = d3.scaleQuantize([0, 40], isDark ? d3.schemeBlues[5].slice().reverse() : d3.schemeBlues[5]);
+// 卡片默认浅底：直接取中/浅档色阶；不要用 prefers-color-scheme 判断深浅
+const color = d3.scaleQuantize([0, 40], d3.schemeBlues[5]);
 const svg = d3.select('#map').append('svg').attr('viewBox', '0 0 900 560').attr('width', '100%');
 const path = d3.geoPath(d3.geoAlbersUsa().scale(1100).translate([450, 280]));
 d3.json('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json').then(us => {
   svg.selectAll('path').data(topojson.feature(us, us.objects.states).features).join('path')
     .attr('d', path)
-    .attr('stroke', isDark ? 'rgba(255,255,255,.15)' : '#fff')
+    .attr('stroke', '#fff')
     .attr('fill', d => color(values[d.properties.name] ?? 0));
 });
 </script>
@@ -367,7 +367,7 @@ d3.json('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json').then(us => {
 
 - **填满画布** —— 插画要饱满，不要稀疏
 - **用色大胆**：混用 `--color-text-*` 各类别（info 蓝、success 绿、warning 琥珀）制造变化
-- **插画是唯一允许自定义 `<style>` 颜色块的地方** —— 可自由配色，也可为深色模式写 `prefers-color-scheme` 变体
+- **插画是唯一允许自定义 `<style>` 颜色块的地方** —— 可自由配色；深浅适配交给卡片的浅底/深底开关（用 `c-*` / `var(--color-*)`），不要用 `prefers-color-scheme`（它跟随系统，不跟随卡片）
 - 用不透明形状叠加制造层次感
 - 用 `<path>` 曲线、`<ellipse>`、`<circle>` 做有机形态
 - 纹理靠**重复**（平行线、圆点、排线），不用栅格特效
@@ -385,7 +385,7 @@ d3.json('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json').then(us => {
 
 ## 7. 实战速查
 
-| 我想做… | 传什么 |
+| 我想做… | 用哪个模块 |
 |---|---|
 | 概念层级、系统结构 | `diagram` |
 | 流程、时序、步骤链 | `diagram` |
@@ -397,4 +397,4 @@ d3.json('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json').then(us => {
 | 地图 / 热力分布 | `chart` |
 | 装饰性插画、头图 | `art` |
 
-**主题适配**：宿主每轮注入 `IDE Theme: light|dark`，据此选用 1.7 节的明暗速查配色，不要硬编码与主题相悖的色值。
+**主题适配**：本宿主不注入 IDE 主题，卡片自带「浅底/深底」切换。优先用 `c-*` 色板类与 `var(--color-*)` 令牌（随当前底色自动映射）；确需写 hex 时按 1.7 节取对应档位（canvas 图表按 5.2 用 hex），不要用 `prefers-color-scheme`——它跟随操作系统，不跟随卡片开关。
